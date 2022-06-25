@@ -13,17 +13,26 @@ function App() {
   const [review, setReview] = React.useState(false)
 
   React.useEffect(() => {
-    fetch('https://opentdb.com/api.php?amount=10&category=21&difficulty=medium&type=multiple')
+    fetch('https://opentdb.com/api.php?amount=10&category=21&difficulty=easy&type=multiple')
       .then(res => res.json())
       .then(data => {
         data.results.map(result => {
           return setQuizData(prev => [...prev, {
-            question: result.question,
+            question: decodeEntities(result.question),
             options: getShuffledOptions([...result.incorrect_answers, result.correct_answer]),
           }])
         })
       }).catch(err => console.log("OOPS", err))
     }, [fetchData])
+
+    function decodeEntities(string){
+      let modifiedString;
+      let tempEl = document.createElement('p');
+      tempEl.innerHTML = string;
+      modifiedString = tempEl.textContent || tempEl.innerText;
+      tempEl = null;
+      return modifiedString;
+  }
 
   function startQuiz(){
     setQuizScreen(true);
@@ -31,10 +40,11 @@ function App() {
   }
 
   function getShuffledOptions(array){
-      const answer = array.pop();
+      const answer = decodeEntities(array.pop());
+      const modifiedArray = array.map(item => decodeEntities(item));
       const randomNumber = Math.floor(Math.random() * 4);
-      array.splice(randomNumber, 0, answer)
-      const optionsArray = array.map(item => {
+      modifiedArray.splice(randomNumber, 0, answer)
+      const optionsArray = modifiedArray.map(item => {
         return {
           value: item,
           isCorrect: item === answer ? true : false,
